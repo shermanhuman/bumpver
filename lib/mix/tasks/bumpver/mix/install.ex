@@ -229,7 +229,12 @@ defmodule Mix.Tasks.Bumpver.Mix.Install do
   defp insert_project_aliases_ref(list) do
     if String.contains?(list, "\n") do
       indent = detect_inner_indent(list) || "    "
-      String.replace(list, ~r/\n\s*\]\s*$/, "\n#{indent}aliases: aliases(),\n]")
+
+      if Regex.match?(~r/,\s*\n\s*\]\s*$/, list) do
+        String.replace(list, ~r/\n\s*\]\s*$/, "\n#{indent}aliases: aliases(),\n]")
+      else
+        String.replace(list, ~r/\n\s*\]\s*$/, ",\n#{indent}aliases: aliases(),\n]")
+      end
     else
       String.replace(list, ~r/\]\s*$/, ", aliases: aliases()]")
     end
