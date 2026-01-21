@@ -21,7 +21,8 @@ defmodule Bumpver.Mixfile do
     end) || raise "Expected '[' after aliases:"
   end
 
-  @spec find_bracketed_range!(binary(), non_neg_integer()) :: {non_neg_integer(), non_neg_integer()}
+  @spec find_bracketed_range!(binary(), non_neg_integer()) ::
+          {non_neg_integer(), non_neg_integer()}
   def find_bracketed_range!(content, open_bracket_index)
       when is_binary(content) and is_integer(open_bracket_index) do
     binary = content
@@ -86,7 +87,8 @@ defmodule Bumpver.Mixfile do
 
   @spec splice(binary(), non_neg_integer(), non_neg_integer(), binary()) :: binary()
   def splice(content, start_idx, end_idx, replacement)
-      when is_binary(content) and is_integer(start_idx) and is_integer(end_idx) and is_binary(replacement) do
+      when is_binary(content) and is_integer(start_idx) and is_integer(end_idx) and
+             is_binary(replacement) do
     prefix = binary_part(content, 0, start_idx)
     suffix = binary_part(content, end_idx + 1, byte_size(content) - (end_idx + 1))
     prefix <> replacement <> suffix

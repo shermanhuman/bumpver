@@ -39,11 +39,13 @@ defmodule IntegrationTest do
 
     # fetch and compile dependency
     {out, code} = run("mix", ["deps.get"], cd: project, env: [])
+
     if code != 0 do
       flunk("deps.get failed: #{out}")
     end
 
     {out, code} = run("mix", ["compile"], cd: project, env: [])
+
     if code != 0 do
       flunk("compile failed: #{out}")
     end
@@ -79,7 +81,11 @@ defmodule IntegrationTest do
     # Make the alias non-interactive for testing (CI-like)
     mix_exs_path = Path.join(project, "mix.exs")
     mix_content = File.read!(mix_exs_path)
-    File.write!(mix_exs_path, String.replace(mix_content, "bumpver.check --auto-bump", "bumpver.check --auto-bump --yes"))
+
+    File.write!(
+      mix_exs_path,
+      String.replace(mix_content, "bumpver.check --auto-bump", "bumpver.check --auto-bump --yes")
+    )
 
     # Running mix precommit should succeed
     {out2, code2} = run("mix", ["precommit"], cd: project, env: [{"MIX_ENV", "test"}])
@@ -88,13 +94,14 @@ defmodule IntegrationTest do
 
     {out3, code3} = run("mix", ["bumpver.mix.uninstall", "--force"], cd: project, env: [])
     assert code3 == 0, "uninstall failed: #{out3}"
-
   end
 
   test "git hook install/uninstall" do
     project = create_temp_project!()
 
-    {_out1, code1} = run("mix", ["bumpver.git.install", "--auto-bump", "--yes"], cd: project, env: [])
+    {_out1, code1} =
+      run("mix", ["bumpver.git.install", "--auto-bump", "--yes"], cd: project, env: [])
+
     assert code1 == 0
 
     hook = Path.join([project, ".git", "hooks", "pre-commit"])
@@ -109,7 +116,12 @@ defmodule IntegrationTest do
   test "interactive-required fails when no tty (CI)" do
     project = create_temp_project!()
 
-    {out, code} = run("mix", ["bumpver.check", "--auto-bump"], cd: project, env: [{"MIX_ENV", "test"}, {"CI", "1"}])
+    {out, code} =
+      run("mix", ["bumpver.check", "--auto-bump"],
+        cd: project,
+        env: [{"MIX_ENV", "test"}, {"CI", "1"}]
+      )
+
     assert code != 0
     assert String.contains?(out, "Cannot run interactive bump (no TTY detected)")
   end

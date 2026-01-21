@@ -105,7 +105,9 @@ defmodule Mix.Tasks.Bumpver.Mix.Uninstall do
   defp try_remove_from_inline_aliases(content, alias_name, force?) do
     case Regex.run(~r/\baliases:\s*\[/, content, return: :index) do
       [{start, _len}] ->
-        open_bracket_index = Mixfile.find_next_open_bracket!(content, start + String.length("aliases:"))
+        open_bracket_index =
+          Mixfile.find_next_open_bracket!(content, start + String.length("aliases:"))
+
         {list_start, list_end} = Mixfile.find_bracketed_range!(content, open_bracket_index)
         list = String.slice(content, list_start, list_end - list_start + 1)
 

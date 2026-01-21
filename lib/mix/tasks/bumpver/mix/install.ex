@@ -149,7 +149,9 @@ defmodule Mix.Tasks.Bumpver.Mix.Install do
   defp try_install_into_inline_aliases(content, alias_name, force?) do
     case Regex.run(~r/\baliases:\s*\[/, content, return: :index) do
       [{start, _len}] ->
-        open_bracket_index = Mixfile.find_next_open_bracket!(content, start + String.length("aliases:"))
+        open_bracket_index =
+          Mixfile.find_next_open_bracket!(content, start + String.length("aliases:"))
+
         {list_start, list_end} = Mixfile.find_bracketed_range!(content, open_bracket_index)
         list = String.slice(content, list_start, list_end - list_start + 1)
 
@@ -209,7 +211,8 @@ defmodule Mix.Tasks.Bumpver.Mix.Install do
               if Regex.match?(~r/\baliases:\s*/, list) do
                 {:ok, content}
               else
-                {:ok, Mixfile.splice(content, list_start, list_end, insert_project_aliases_ref(list))}
+                {:ok,
+                 Mixfile.splice(content, list_start, list_end, insert_project_aliases_ref(list))}
               end
 
             _ ->
