@@ -84,6 +84,87 @@ If you want “remind me, don’t write files”, use:
 precommit: ["format", "compile --warnings-as-errors", "bumpver.check", "test"]
 ```
 
+## Quickstart
+
+### 1) Install + trigger an interactive bump on `mix precommit`
+
+You want `mix precommit` to run a “did you bump?” check, and *if you didn’t*, walk you through bumping.
+
+1) Add the dependency (dev-only is typical):
+
+```elixir
+def deps do
+  [
+    {:bumpver, "~> 1.0", only: :dev, runtime: false}
+  ]
+end
+```
+
+2) Install the `precommit` alias into your project:
+
+```bash
+mix bumpver.mix.install
+```
+
+3) Run it:
+
+```bash
+mix precommit
+```
+
+If your `mix.exs` version hasn’t changed since `HEAD`, `mix bumpver.check --auto-bump` will kick off an interactive bump.
+
+### 2) Install + use git hooks
+
+You want a local guardrail that runs automatically on `git commit`.
+
+Recommended: have the hook run your `precommit` alias (so you keep the “pipeline” in `mix.exs`):
+
+```bash
+mix bumpver.git.install --command precommit
+```
+
+Or: install a hook that runs the version check directly:
+
+```bash
+mix bumpver.git.install
+```
+
+To remove it later:
+
+```bash
+mix bumpver.git.uninstall
+```
+
+### 3) Integrate with common CI
+
+CI usually has no TTY, so the best default is: *don’t auto-bump in CI*, just fail and tell you to bump locally.
+
+Add a step like:
+
+```bash
+mix bumpver.check --against origin/main
+```
+
+GitHub Actions example (make sure you fetch enough history for `git` to find `origin/main`):
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+
+- uses: erlef/setup-beam@v1
+  with:
+    elixir-version: '1.19.x'
+    otp-version: '26.1'
+
+- run: mix deps.get
+- run: mix format --check-formatted
+- run: mix compile --warnings-as-errors
+- run: mix bumpver.check --against origin/main
+- run: mix test
+```
+
 ## Commands
 
 ### `mix bumpver`
