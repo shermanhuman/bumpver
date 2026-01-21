@@ -15,7 +15,8 @@ defmodule Bumpver.MixProject do
       package: package(),
       docs: docs(),
       name: "Bumpver",
-      source_url: @source_url
+      source_url: @source_url,
+      aliases: aliases()
     ]
   end
 
@@ -54,6 +55,12 @@ defmodule Bumpver.MixProject do
       main: "readme",
       extras: ["README.md", "CHANGELOG.md", "LICENSE"],
       source_ref: "v#{@version}"
+    ]
+  end
+
+  defp aliases do
+    [
+      precommit: ["format", "compile --warnings-as-errors", "bumpver.check --auto-bump", "test"]
     ]
   end
 end
