@@ -1,0 +1,207 @@
+# Bumpver
+
+Version bumping + a gentle “hey, did you bump?” check for Mix projects.
+
+It’s not a release tool. It’s the little voice in your repo that stops you from shipping `0.1.0` forever.
+
+## What you get
+
+- `mix bumpver` - bumps the version in `mix.exs` (interactive by default)
+- `mix bumpver.check` - fails if the version hasn’t changed since a git revision
+- `mix bumpver.mix.install` / `mix bumpver.mix.uninstall` - installs/removes a `precommit` alias in your project
+- `mix bumpver.git.install` / `mix bumpver.git.uninstall` - optional git hook helpers
+
+## Installation
+
+There are really two parts here: (1) add the dependency, then (2) optionally wire a `precommit` alias.
+
+### 1) Add the dependency
+
+In your project’s `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:bumpver, "~> 1.0", only: :dev, runtime: false}
+  ]
+end
+```
+
+### 2) Add a `precommit` alias
+
+You can do this entirely with `mix.exs` aliases (and that’s the point).
+
+Recommended (idempotent, edits your project’s `mix.exs`):
+
+```bash
+mix bumpver.mix.install
+```
+
+That installs:
+
+```elixir
+precommit: [
+  "format",
+  "compile --warnings-as-errors",
+  "bumpver.check --auto-bump",
+  "test"
+]
+```
+
+Prefer editing by hand? Add this to your `defp aliases do ... end`:
+
+```elixir
+defp aliases do
+  [
+    precommit: [
+      "format",
+      "compile --warnings-as-errors",
+      "bumpver.check --auto-bump",
+      "test"
+    ]
+  ]
+end
+```
+
+Note: if you define `defp aliases/0`, make sure your `project/0` includes `aliases: aliases()`.
+
+To undo the installer change later:
+
+```bash
+mix bumpver.mix.uninstall
+```
+
+Now when you run `mix precommit`, the alias will run:
+
+1. `mix format`
+2. `mix compile --warnings-as-errors`
+3. `mix bumpver.check --auto-bump` (interactive by default)
+4. `mix test`
+
+If you want “remind me, don’t write files”, use:
+
+```elixir
+precommit: ["format", "compile --warnings-as-errors", "bumpver.check", "test"]
+```
+
+## Commands
+
+### `mix bumpver`
+
+Examples:
+
+```bash
+mix bumpver
+mix bumpver --minor
+mix bumpver --patch --yes
+mix bumpver --minor --dry-run
+```
+
+Options:
+
+- `--major|--minor|--patch` choose bump type without prompting
+- `--yes` non-interactive default (uses patch if no bump type is provided)
+- `--dry-run` print the new version but do not write `mix.exs`
+- `--file PATH` operate on a different `mix.exs` path
+- `--help` show help
+
+### `mix bumpver.check`
+
+Examples:
+
+```bash
+mix bumpver.check
+mix bumpver.check --against HEAD
+mix bumpver.check --auto-bump
+mix bumpver.check --auto-bump --yes
+mix bumpver.check --auto-bump --bump minor
+```
+
+Options:
+
+- `--file PATH` path to `mix.exs` (default: `mix.exs`)
+- `--against REV` git revision to compare against (default: `HEAD`)
+- `--auto-bump` when unchanged, run `mix bumpver` automatically (interactive by default)
+- `--bump major|minor|patch` choose bump type explicitly
+- `--major|--minor|--patch` aliases for `--bump`
+- `--yes` non-interactive default (uses patch if no bump type is provided)
+- `--help` show help
+
+Non-interactive note:
+
+- Git hooks / CI often don’t have a TTY.
+- If you want auto-bump there, pass `--yes` and/or `--bump …`.
+
+### `mix bumpver.mix.install`
+
+Installs a Mix alias (default: `precommit`) in your project’s `mix.exs`.
+
+Examples:
+
+```bash
+mix bumpver.mix.install
+mix bumpver.mix.install --alias precommit
+mix bumpver.mix.install --force
+```
+
+Options:
+
+- `--file PATH` path to `mix.exs` (default: `mix.exs`)
+- `--alias NAME` alias name (default: `precommit`)
+- `--force` replace an existing alias entry
+- `--help` show help
+
+### `mix bumpver.mix.uninstall`
+
+Removes a Mix alias (default: `precommit`) from your project’s `mix.exs`.
+
+Examples:
+
+```bash
+mix bumpver.mix.uninstall
+mix bumpver.mix.uninstall --force
+```
+
+Options:
+
+- `--file PATH` path to `mix.exs` (default: `mix.exs`)
+- `--alias NAME` alias name (default: `precommit`)
+- `--force` remove the alias even if it points elsewhere
+- `--help` show help
+
+### `mix bumpver.git.install`
+
+Installs a git hook (default: `pre-commit`) that runs a Mix command.
+
+Examples:
+
+```bash
+mix bumpver.git.install
+mix bumpver.git.install --command precommit
+mix bumpver.git.install --auto-bump
+mix bumpver.git.install --auto-bump --yes
+mix bumpver.git.install --auto-bump --bump minor
+```
+
+Options:
+
+- `--hook HOOK` hook name (default: `pre-commit`)
+- `--command CMD` Mix command to run (default: `bumpver.check`)
+- `--auto-bump` only valid when `--command` starts with `bumpver.check`; adds `--auto-bump` (interactive by default)
+- `--bump major|minor|patch` (or `--major|--minor|--patch`) bump type for auto-bump
+- `--yes` pass `--yes` to `mix bumpver.check` (non-interactive default)
+- `--force` overwrite an existing hook
+- `--help` show help
+
+### `mix bumpver.git.uninstall`
+
+Options:
+
+- `--hook HOOK` hook name (default: `pre-commit`)
+- `--force` remove even if it wasn’t generated by bumpver
+- `--help` show help
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
